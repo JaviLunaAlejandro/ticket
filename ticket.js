@@ -1,41 +1,69 @@
-  class TicketManager {
+ class TicketManager {
+
     #precioBaseDeGanancia
-    constructor(){
+    constructor() {
         this.events = []
         this.#precioBaseDeGanancia = 0.15
-    
     }
 
     getEvents = () => {return this.events}
+    
     getNextID = () => {
         const count = this.events.length
+        if (count == 0) return 1
 
-        if (count > 0){
-            const lastEvent = this.events[count-1]
-            const id = lastEvent.id + 1
+        const lastEvent = this.events[count-1]
+        const lastID = lastEvent.id
+        const nextID = lastID + 1
 
-            return id
-        } else{
-            return 1
-        }
+        return nextID
+
     }
+
     addEvent = (name, place, price, capacity, date) => {
         const id = this.getNextID()
+
         const event = {
             id,
             name,
             place,
-            price: price * (1+ this.#precioBaseDeGanancia),
+            priceBase: price,
+            price: price * (1 + this.#precioBaseDeGanancia),
             capacity: capacity ?? 50,
             date: date ?? new Date().toLocaleDateString(),
-            participantes: []
+            participants: []
         }
 
         this.events.push(event)
     }
- }
 
- const ticketManager = new TicketManager()
- ticketManager.addEvent("bad bunny", "Medellin", 120, 0, 0)
- ticketManager.addEvent("AC DC", "Miami", 2000, 0, 0)
- console.log(ticketManager.getEvents());
+    addParticipant = (eventID, userID) => {
+        const event = this.events.find(event => event.id == eventID)
+        if(event == undefined) return -1
+
+        if(!event.participants.includes(userID)) {
+            event.participants.push(userID)
+            return 1
+        }
+
+        return -1
+    }
+
+    ponerEventoEnGira = (eventID, placeNew, dateNew) => {
+        const event = this.events.find(event => event.id == eventID)
+        const { name, priceBase, capacity } = event
+
+        this.addEvent(name, placeNew, priceBase, capacity, dateNew)
+    }
+
+}
+
+const manager = new TicketManager()
+manager.addEvent("Bad Bunny", "Medellin", 120, null, null)
+manager.addEvent("AC DC", "Miami", 2000, null, null)
+
+manager.addParticipant(2, "Ariel")
+
+manager.ponerEventoEnGira(1, "Buenos Aires", null)
+
+console.log(manager.events);
